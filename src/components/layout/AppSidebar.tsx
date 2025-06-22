@@ -86,7 +86,7 @@ export function AppSidebar() {
     },
   ];
 
-  const userRole = user?.roleData?.nom;
+  const userRole = user?.role?.nom;
   const filteredItems = menuItems.filter(item => 
     userRole && item.roles.includes(userRole)
   );

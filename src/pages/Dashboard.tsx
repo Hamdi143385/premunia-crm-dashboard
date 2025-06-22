@@ -28,13 +28,13 @@ export default function Dashboard() {
   }, [user]);
 
   const fetchDashboardData = async () => {
-    if (!user?.utilisateur) return;
+    if (!user?.id) return;
 
     try {
       setLoading(true);
-      const userId = user.utilisateur.id;
-      const userRole = user.roleData?.nom;
-      const equipeId = user.utilisateur.equipe_id;
+      const userId = user.id;
+      const userRole = user.role?.nom;
+      const equipeId = user.equipe_id;
 
       let contactsQuery = supabase.from('contacts').select('id', { count: 'exact', head: true });
       let propositionsQuery = supabase.from('propositions').select('id', { count: 'exact', head: true });
@@ -86,7 +86,7 @@ export default function Dashboard() {
   };
 
   const getRoleBasedTitle = () => {
-    switch (user?.roleData?.nom) {
+    switch (user?.role?.nom) {
       case 'admin':
         return 'Vue d\'ensemble globale';
       case 'gestionnaire':

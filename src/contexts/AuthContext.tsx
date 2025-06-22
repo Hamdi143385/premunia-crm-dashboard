@@ -3,18 +3,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
-interface AuthUser extends Omit<User, 'role'> {
-  roleData?: {
+interface AuthUser extends User {
+  role?: {
     id: string;
     nom: string;
   };
-  utilisateur?: {
-    id: string;
-    nom_complet: string;
-    email: string;
-    role_id: string;
-    equipe_id?: string;
-  };
+  nom_complet?: string;
+  equipe_id?: string;
 }
 
 interface AuthContextType {
@@ -75,23 +70,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('email', authUser.email)
         .single();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        setUser(authUser);
+        setLoading(false);
+        return;
+      }
 
       const enrichedUser: AuthUser = {
         ...authUser,
-        roleData: userData.role,
-        utilisateur: {
-          id: userData.id,
-          nom_complet: userData.nom_complet,
-          email: userData.email,
-          role_id: userData.role_id,
-          equipe_id: userData.equipe_id
-        }
+        role: userData.role,
+        nom_complet: userData.nom_complet,
+        equipe_id: userData.equipe_id
       };
 
       setUser(enrichedUser);
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setUser(authUser);
     } finally {
       setLoading(false);
     }

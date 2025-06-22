@@ -36,10 +36,10 @@ export function AppHeader() {
           <SidebarTrigger className="lg:hidden" />
           <div>
             <h1 className="text-xl font-semibold text-slate-800">
-              Bienvenue, {user?.utilisateur?.nom_complet || 'Utilisateur'}
+              Bienvenue, {user?.nom_complet || 'Utilisateur'}
             </h1>
             <p className="text-sm text-slate-500 capitalize">
-              {user?.roleData?.nom || 'Utilisateur'}
+              {user?.role?.nom || 'Utilisateur'}
             </p>
           </div>
         </div>
@@ -55,11 +55,11 @@ export function AppHeader() {
               <Button variant="ghost" className="flex items-center space-x-2 hover:bg-slate-100">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white text-sm">
-                    {getInitials(user?.utilisateur?.nom_complet)}
+                    {getInitials(user?.nom_complet)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden md:block font-medium text-slate-700">
-                  {user?.utilisateur?.nom_complet}
+                  {user?.nom_complet}
                 </span>
                 <ChevronDown className="h-4 w-4 text-slate-500" />
               </Button>
@@ -67,9 +67,9 @@ export function AppHeader() {
             <DropdownMenuContent align="end" className="w-56 bg-white border border-slate-200 shadow-lg">
               <div className="px-3 py-2 border-b border-slate-100">
                 <p className="text-sm font-medium text-slate-800">
-                  {user?.utilisateur?.nom_complet}
+                  {user?.nom_complet}
                 </p>
-                <p className="text-xs text-slate-500">{user?.utilisateur?.email}</p>
+                <p className="text-xs text-slate-500">{user?.email}</p>
               </div>
               <DropdownMenuItem className="flex items-center space-x-2 hover:bg-slate-50">
                 <User className="h-4 w-4" />
