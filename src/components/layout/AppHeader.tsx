@@ -29,6 +29,9 @@ export function AppHeader() {
     }
   };
 
+  const userDisplayName = user?.profile?.nom_complet || user?.email || 'Utilisateur';
+  const userRole = user?.profile?.role?.nom || 'Utilisateur';
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="flex h-16 items-center justify-between px-6">
@@ -36,10 +39,10 @@ export function AppHeader() {
           <SidebarTrigger className="lg:hidden" />
           <div>
             <h1 className="text-xl font-semibold text-slate-800">
-              Bienvenue, {user?.nom_complet || 'Utilisateur'}
+              Bienvenue, {userDisplayName}
             </h1>
             <p className="text-sm text-slate-500 capitalize">
-              {user?.role?.nom || 'Utilisateur'}
+              {userRole}
             </p>
           </div>
         </div>
@@ -55,11 +58,11 @@ export function AppHeader() {
               <Button variant="ghost" className="flex items-center space-x-2 hover:bg-slate-100">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white text-sm">
-                    {getInitials(user?.nom_complet)}
+                    {getInitials(userDisplayName)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden md:block font-medium text-slate-700">
-                  {user?.nom_complet}
+                  {userDisplayName}
                 </span>
                 <ChevronDown className="h-4 w-4 text-slate-500" />
               </Button>
@@ -67,7 +70,7 @@ export function AppHeader() {
             <DropdownMenuContent align="end" className="w-56 bg-white border border-slate-200 shadow-lg">
               <div className="px-3 py-2 border-b border-slate-100">
                 <p className="text-sm font-medium text-slate-800">
-                  {user?.nom_complet}
+                  {userDisplayName}
                 </p>
                 <p className="text-xs text-slate-500">{user?.email}</p>
               </div>

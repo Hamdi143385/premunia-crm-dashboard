@@ -25,7 +25,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export function AppSidebar() {
-  const { user } = useAuth();
+  const { userRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -86,7 +86,6 @@ export function AppSidebar() {
     },
   ];
 
-  const userRole = user?.role?.nom;
   const filteredItems = menuItems.filter(item => 
     userRole && item.roles.includes(userRole)
   );

@@ -1,92 +1,16 @@
 
-import { useEffect, useState } from 'react';
+import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Users, FileText, DollarSign, Target, TrendingUp, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface DashboardStats {
-  nouveauxContacts: number;
-  propositionsEnAttente: number;
-  caMensuel: number;
-  progressionObjectif: number;
-}
-
 export default function Dashboard() {
-  const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats>({
-    nouveauxContacts: 0,
-    propositionsEnAttente: 0,
-    caMensuel: 0,
-    progressionObjectif: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [user]);
-
-  const fetchDashboardData = async () => {
-    if (!user?.id) return;
-
-    try {
-      setLoading(true);
-      const userId = user.id;
-      const userRole = user.role?.nom;
-      const equipeId = user.equipe_id;
-
-      let contactsQuery = supabase.from('contacts').select('id', { count: 'exact', head: true });
-      let propositionsQuery = supabase.from('propositions').select('id', { count: 'exact', head: true });
-      let contratsQuery = supabase.from('contrats').select('cotisation_mensuelle');
-
-      // Apply role-based filters
-      if (userRole === 'conseiller') {
-        contactsQuery = contactsQuery.eq('collaborateur_en_charge', userId);
-        propositionsQuery = propositionsQuery.eq('conseiller_id', userId);
-        contratsQuery = contratsQuery.eq('contact_client_id', userId);
-      } else if (userRole === 'gestionnaire' && equipeId) {
-        // For gestionnaire, filter by team members
-        const { data: teamMembers } = await supabase
-          .from('users')
-          .select('id')
-          .eq('equipe_id', equipeId);
-
-        if (teamMembers && teamMembers.length > 0) {
-          const memberIds = teamMembers.map(m => m.id);
-          contactsQuery = contactsQuery.in('collaborateur_en_charge', memberIds);
-          propositionsQuery = propositionsQuery.in('conseiller_id', memberIds);
-        }
-      }
-      // For admin, no additional filters (see all data)
-
-      // Execute queries
-      const [contactsResult, propositionsResult, contratsResult] = await Promise.all([
-        contactsQuery.eq('statut_lead', 'Nouveau'),
-        propositionsQuery.eq('statut', 'envoyee'),
-        contratsQuery.gte('date_signature', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
-      ]);
-
-      // Calculate stats
-      const nouveauxContacts = contactsResult.count || 0;
-      const propositionsEnAttente = propositionsResult.count || 0;
-      const caMensuel = contratsResult.data?.reduce((sum, contrat) => sum + (contrat.cotisation_mensuelle || 0), 0) || 0;
-
-      setStats({
-        nouveauxContacts,
-        propositionsEnAttente,
-        caMensuel,
-        progressionObjectif: 75, // Mock data for now
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { userRole } = useAuth();
+  const { stats, loading, error } = useDashboard();
 
   const getRoleBasedTitle = () => {
-    switch (user?.role?.nom) {
+    switch (userRole) {
       case 'admin':
         return 'Vue d\'ensemble globale';
       case 'gestionnaire':
@@ -102,6 +26,17 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Erreur</h3>
+          <p className="text-gray-600">{error}</p>
+        </div>
       </div>
     );
   }
@@ -170,27 +105,15 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-800">Nouveau contact ajouté</p>
-                  <p className="text-xs text-slate-500">Il y a 2 heures</p>
+              {stats.activiteRecente.map((activite) => (
+                <div key={activite.id} className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-800">{activite.message}</p>
+                    <p className="text-xs text-slate-500">{activite.timestamp}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-800">Proposition envoyée</p>
-                  <p className="text-xs text-slate-500">Il y a 4 heures</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
-                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-800">Contrat signé</p>
-                  <p className="text-xs text-slate-500">Hier</p>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>

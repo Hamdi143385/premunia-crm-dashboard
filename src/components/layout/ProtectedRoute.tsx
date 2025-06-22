@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, userRole } = useAuth();
 
   if (loading) {
     return (
@@ -22,7 +22,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user.role?.nom && !allowedRoles.includes(user.role.nom)) {
+  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

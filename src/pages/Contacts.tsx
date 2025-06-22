@@ -1,79 +1,17 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
+import { useContacts } from '@/hooks/useContacts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Phone, Mail, MapPin, Filter } from 'lucide-react';
+import { Search, Plus, Phone, Mail, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-interface Contact {
-  id: string;
-  nom: string;
-  prenom: string;
-  email: string;
-  telephone: string;
-  statut_lead: string;
-  collaborateur_en_charge: string;
-  created_at: string;
-  utilisateur?: {
-    nom_complet: string;
-  };
-}
-
 export default function Contacts() {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { contacts, loading, error } = useContacts();
   const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    fetchContacts();
-  }, [user]);
-
-  const fetchContacts = async () => {
-    if (!user?.id) return;
-
-    try {
-      setLoading(true);
-      let query = supabase
-        .from('contacts')
-        .select(`
-          *,
-          utilisateur:users!collaborateur_en_charge(nom_complet)
-        `)
-        .order('created_at', { ascending: false });
-
-      // Apply role-based filters
-      const userRole = user.role?.nom;
-      if (userRole === 'conseiller') {
-        query = query.eq('collaborateur_en_charge', user.id);
-      } else if (userRole === 'gestionnaire' && user.equipe_id) {
-        // Get team members first
-        const { data: teamMembers } = await supabase
-          .from('users')
-          .select('id')
-          .eq('equipe_id', user.equipe_id);
-
-        if (teamMembers && teamMembers.length > 0) {
-          const memberIds = teamMembers.map(m => m.id);
-          query = query.in('collaborateur_en_charge', memberIds);
-        }
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setContacts(data || []);
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredContacts = contacts.filter(contact =>
     `${contact.prenom} ${contact.nom}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,6 +40,17 @@ export default function Contacts() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Erreur</h3>
+          <p className="text-gray-600">{error}</p>
+        </div>
       </div>
     );
   }
@@ -149,7 +98,7 @@ export default function Contacts() {
                     {contact.prenom} {contact.nom}
                   </CardTitle>
                   <p className="text-sm text-slate-500 mt-1">
-                    Géré par {contact.utilisateur?.nom_complet}
+                    Géré par {contact.utilisateur?.nom_complet || 'Non assigné'}
                   </p>
                 </div>
                 <Badge className={`${getStatusColor(contact.statut_lead)} border-0`}>
