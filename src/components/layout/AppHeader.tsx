@@ -15,9 +15,10 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 export function AppHeader() {
   const { user, signOut } = useAuth();
 
-  const getInitials = (nom?: string, prenom?: string) => {
-    if (!nom && !prenom) return 'U';
-    return `${nom?.charAt(0) || ''}${prenom?.charAt(0) || ''}`.toUpperCase();
+  const getInitials = (nomComplet?: string) => {
+    if (!nomComplet) return 'U';
+    const names = nomComplet.split(' ');
+    return names.map(name => name.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
 
   const handleSignOut = async () => {
@@ -35,7 +36,7 @@ export function AppHeader() {
           <SidebarTrigger className="lg:hidden" />
           <div>
             <h1 className="text-xl font-semibold text-slate-800">
-              Bienvenue, {user?.utilisateur?.prenom || 'Utilisateur'}
+              Bienvenue, {user?.utilisateur?.nom_complet || 'Utilisateur'}
             </h1>
             <p className="text-sm text-slate-500 capitalize">
               {user?.roleData?.nom || 'Utilisateur'}
@@ -54,11 +55,11 @@ export function AppHeader() {
               <Button variant="ghost" className="flex items-center space-x-2 hover:bg-slate-100">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white text-sm">
-                    {getInitials(user?.utilisateur?.nom, user?.utilisateur?.prenom)}
+                    {getInitials(user?.utilisateur?.nom_complet)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden md:block font-medium text-slate-700">
-                  {user?.utilisateur?.prenom} {user?.utilisateur?.nom}
+                  {user?.utilisateur?.nom_complet}
                 </span>
                 <ChevronDown className="h-4 w-4 text-slate-500" />
               </Button>
@@ -66,7 +67,7 @@ export function AppHeader() {
             <DropdownMenuContent align="end" className="w-56 bg-white border border-slate-200 shadow-lg">
               <div className="px-3 py-2 border-b border-slate-100">
                 <p className="text-sm font-medium text-slate-800">
-                  {user?.utilisateur?.prenom} {user?.utilisateur?.nom}
+                  {user?.utilisateur?.nom_complet}
                 </p>
                 <p className="text-xs text-slate-500">{user?.utilisateur?.email}</p>
               </div>

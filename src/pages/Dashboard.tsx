@@ -33,22 +33,22 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const userId = user.utilisateur.id;
-      const userRole = user.role?.nom;
+      const userRole = user.roleData?.nom;
       const equipeId = user.utilisateur.equipe_id;
 
       let contactsQuery = supabase.from('contacts').select('id', { count: 'exact', head: true });
       let propositionsQuery = supabase.from('propositions').select('id', { count: 'exact', head: true });
-      let contratsQuery = supabase.from('contrats').select('montant_mensuel');
+      let contratsQuery = supabase.from('contrats').select('cotisation_mensuelle');
 
       // Apply role-based filters
       if (userRole === 'conseiller') {
         contactsQuery = contactsQuery.eq('collaborateur_en_charge', userId);
         propositionsQuery = propositionsQuery.eq('conseiller_id', userId);
-        contratsQuery = contratsQuery.eq('conseiller_id', userId);
+        contratsQuery = contratsQuery.eq('contact_client_id', userId);
       } else if (userRole === 'gestionnaire' && equipeId) {
         // For gestionnaire, filter by team members
         const { data: teamMembers } = await supabase
-          .from('utilisateurs')
+          .from('users')
           .select('id')
           .eq('equipe_id', equipeId);
 
@@ -56,7 +56,6 @@ export default function Dashboard() {
           const memberIds = teamMembers.map(m => m.id);
           contactsQuery = contactsQuery.in('collaborateur_en_charge', memberIds);
           propositionsQuery = propositionsQuery.in('conseiller_id', memberIds);
-          contratsQuery = contratsQuery.in('conseiller_id', memberIds);
         }
       }
       // For admin, no additional filters (see all data)
@@ -65,13 +64,13 @@ export default function Dashboard() {
       const [contactsResult, propositionsResult, contratsResult] = await Promise.all([
         contactsQuery.eq('statut_lead', 'Nouveau'),
         propositionsQuery.eq('statut', 'envoyee'),
-        contratsQuery.gte('date_signature', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+        contratsQuery.gte('date_signature', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
       ]);
 
       // Calculate stats
       const nouveauxContacts = contactsResult.count || 0;
       const propositionsEnAttente = propositionsResult.count || 0;
-      const caMensuel = contratsResult.data?.reduce((sum, contrat) => sum + (contrat.montant_mensuel || 0), 0) || 0;
+      const caMensuel = contratsResult.data?.reduce((sum, contrat) => sum + (contrat.cotisation_mensuelle || 0), 0) || 0;
 
       setStats({
         nouveauxContacts,
@@ -87,7 +86,7 @@ export default function Dashboard() {
   };
 
   const getRoleBasedTitle = () => {
-    switch (user?.role?.nom) {
+    switch (user?.roleData?.nom) {
       case 'admin':
         return 'Vue d\'ensemble globale';
       case 'gestionnaire':

@@ -10,8 +10,7 @@ interface AuthUser extends Omit<User, 'role'> {
   };
   utilisateur?: {
     id: string;
-    nom: string;
-    prenom: string;
+    nom_complet: string;
     email: string;
     role_id: string;
     equipe_id?: string;
@@ -68,12 +67,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Fetch user data with role information
       const { data: userData, error: userError } = await supabase
-        .from('utilisateurs')
+        .from('users')
         .select(`
           *,
           role:roles(id, nom)
         `)
-        .eq('auth_id', authUser.id)
+        .eq('email', authUser.email)
         .single();
 
       if (userError) throw userError;
@@ -81,7 +80,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const enrichedUser: AuthUser = {
         ...authUser,
         roleData: userData.role,
-        utilisateur: userData
+        utilisateur: {
+          id: userData.id,
+          nom_complet: userData.nom_complet,
+          email: userData.email,
+          role_id: userData.role_id,
+          equipe_id: userData.equipe_id
+        }
       };
 
       setUser(enrichedUser);

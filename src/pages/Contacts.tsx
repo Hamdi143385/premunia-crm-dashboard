@@ -20,8 +20,7 @@ interface Contact {
   collaborateur_en_charge: string;
   date_creation: string;
   utilisateur?: {
-    nom: string;
-    prenom: string;
+    nom_complet: string;
   };
 }
 
@@ -45,18 +44,18 @@ export default function Contacts() {
         .from('contacts')
         .select(`
           *,
-          utilisateur:utilisateurs!collaborateur_en_charge(nom, prenom)
+          utilisateur:users!collaborateur_en_charge(nom_complet)
         `)
-        .order('date_creation', { ascending: false });
+        .order('created_at', { ascending: false });
 
       // Apply role-based filters
-      const userRole = user.role?.nom;
+      const userRole = user.roleData?.nom;
       if (userRole === 'conseiller') {
         query = query.eq('collaborateur_en_charge', user.utilisateur.id);
       } else if (userRole === 'gestionnaire' && user.utilisateur.equipe_id) {
         // Get team members first
         const { data: teamMembers } = await supabase
-          .from('utilisateurs')
+          .from('users')
           .select('id')
           .eq('equipe_id', user.utilisateur.equipe_id);
 
@@ -151,7 +150,7 @@ export default function Contacts() {
                     {contact.prenom} {contact.nom}
                   </CardTitle>
                   <p className="text-sm text-slate-500 mt-1">
-                    Géré par {contact.utilisateur?.prenom} {contact.utilisateur?.nom}
+                    Géré par {contact.utilisateur?.nom_complet}
                   </p>
                 </div>
                 <Badge className={`${getStatusColor(contact.statut_lead)} border-0`}>
@@ -170,15 +169,9 @@ export default function Contacts() {
                   <span>{contact.telephone}</span>
                 </div>
               )}
-              {contact.adresse && (
-                <div className="flex items-center space-x-3 text-sm text-slate-600">
-                  <MapPin className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{contact.adresse}</span>
-                </div>
-              )}
               <div className="pt-2 border-t border-slate-100">
                 <p className="text-xs text-slate-500">
-                  Créé le {new Date(contact.date_creation).toLocaleDateString('fr-FR')}
+                  Créé le {new Date(contact.created_at).toLocaleDateString('fr-FR')}
                 </p>
               </div>
             </CardContent>
