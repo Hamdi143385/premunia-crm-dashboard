@@ -15,10 +15,9 @@ interface Contact {
   prenom: string;
   email: string;
   telephone: string;
-  adresse: string;
   statut_lead: string;
   collaborateur_en_charge: string;
-  date_creation: string;
+  created_at: string;
   utilisateur?: {
     nom_complet: string;
   };
@@ -36,7 +35,7 @@ export default function Contacts() {
   }, [user]);
 
   const fetchContacts = async () => {
-    if (!user?.utilisateur) return;
+    if (!user?.id) return;
 
     try {
       setLoading(true);
@@ -49,15 +48,15 @@ export default function Contacts() {
         .order('created_at', { ascending: false });
 
       // Apply role-based filters
-      const userRole = user.roleData?.nom;
+      const userRole = user.role?.nom;
       if (userRole === 'conseiller') {
-        query = query.eq('collaborateur_en_charge', user.utilisateur.id);
-      } else if (userRole === 'gestionnaire' && user.utilisateur.equipe_id) {
+        query = query.eq('collaborateur_en_charge', user.id);
+      } else if (userRole === 'gestionnaire' && user.equipe_id) {
         // Get team members first
         const { data: teamMembers } = await supabase
           .from('users')
           .select('id')
-          .eq('equipe_id', user.utilisateur.equipe_id);
+          .eq('equipe_id', user.equipe_id);
 
         if (teamMembers && teamMembers.length > 0) {
           const memberIds = teamMembers.map(m => m.id);
