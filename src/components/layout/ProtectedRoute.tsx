@@ -22,7 +22,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user.role?.nom && !allowedRoles.includes(user.role.nom)) {
+  if (allowedRoles && user.roleData?.nom && !allowedRoles.includes(user.roleData.nom)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

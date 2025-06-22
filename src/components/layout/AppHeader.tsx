@@ -38,7 +38,7 @@ export function AppHeader() {
               Bienvenue, {user?.utilisateur?.prenom || 'Utilisateur'}
             </h1>
             <p className="text-sm text-slate-500 capitalize">
-              {user?.role?.nom || 'Utilisateur'}
+              {user?.roleData?.nom || 'Utilisateur'}
             </p>
           </div>
         </div>

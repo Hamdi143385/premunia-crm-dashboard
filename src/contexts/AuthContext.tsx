@@ -1,10 +1,10 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
-interface AuthUser extends User {
-  role?: {
+interface AuthUser extends Omit<User, 'role'> {
+  roleData?: {
     id: string;
     nom: string;
   };
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const enrichedUser: AuthUser = {
         ...authUser,
-        role: userData.role,
+        roleData: userData.role,
         utilisateur: userData
       };
 
