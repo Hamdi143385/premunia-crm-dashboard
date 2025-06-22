@@ -7,15 +7,20 @@ export interface Contact {
   id: string;
   nom: string;
   prenom: string;
-  email: string;
-  telephone: string;
+  email?: string;
+  telephone?: string;
   statut_lead: string;
-  collaborateur_en_charge: string;
+  collaborateur_en_charge?: string;
   created_at: string;
+  updated_at: string;
   source?: string;
   score?: number;
   notes?: string;
   tags?: string[];
+  date_naissance?: string;
+  date_dernier_statut?: string;
+  date_derniere_relance?: string;
+  derniere_relance_envoyee?: string;
   utilisateur?: {
     nom_complet: string;
   };
@@ -70,7 +75,7 @@ export const useContacts = () => {
     }
   };
 
-  const createContact = async (contactData: Partial<Contact>) => {
+  const createContact = async (contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at' | 'utilisateur'>) => {
     try {
       const { data, error } = await supabase
         .from('contacts')

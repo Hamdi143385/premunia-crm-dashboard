@@ -78,7 +78,7 @@ export const useTaches = () => {
     }
   };
 
-  const createTache = async (tacheData: Partial<Tache>) => {
+  const createTache = async (tacheData: Omit<Tache, 'id' | 'created_at' | 'updated_at' | 'contact' | 'assignee' | 'createur'>) => {
     try {
       const { data, error } = await supabase
         .from('taches')

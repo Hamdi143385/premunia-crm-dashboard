@@ -12,6 +12,13 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Contacts from "./pages/Contacts";
+import ContactDetail from "./pages/ContactDetail";
+import Propositions from "./pages/Propositions";
+import Contrats from "./pages/Contrats";
+import Taches from "./pages/Taches";
+import Objectifs from "./pages/Objectifs";
+import Campagnes from "./pages/Campagnes";
+import Import from "./pages/Import";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

@@ -75,7 +75,7 @@ export const usePropositions = () => {
     }
   };
 
-  const createProposition = async (propositionData: Partial<Proposition>) => {
+  const createProposition = async (propositionData: Omit<Proposition, 'id' | 'created_at' | 'updated_at' | 'contact' | 'conseiller'>) => {
     try {
       const { data, error } = await supabase
         .from('propositions')
